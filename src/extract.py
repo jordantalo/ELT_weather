@@ -1,26 +1,51 @@
 import requests
-from config import CITIES
+from datetime import datetime
 
-url = "https://api.open-meteo.com/v1/forecast"
+METEO_URL = "https://api.open-meteo.com/v1/forecast"
+AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality?"
 
-for city_name, coords in CITIES.items():
+def fetch_city_data(city_name: str, coords: dict) -> dict:
+	base_params = {
+		"latitude": coords["lat"],
+		"longitude": coords["lon"],
+		"past_days": 30,
+		"forecast_days": 4
+	}
 
-    params = {
-        "latitude": coords["lat"],
-        "longitude": coords["lon"],
-        "past_days": 30,
-        "forecast_days": 5,
-        "hourly": "temperature_2m",
-        "models": "meteofrance_seamless"
-    }
+	meteo_params = {
+		"hourly": "temperature_2m",
+		"models": "meteofrance_seamless"
+	}
 
-    response = requests.get(url, params=params)
+	air_params = {
+		"hourly": "pm10,pm2_5"
+	}
 
-    if response.status_code == 200:
-        data = response.json()
-        print(f"Success for {city_name}")
-    else:
-        print(
-            f"Error {response.status_code} when retrieving {city_name} meteo data"
-        )
+	final_meteo_params = base_params | meteo_params
+	final_air_params = base_params | air_params
+
+	meteo_res = requests.get(
+		METEO_URL,
+		params=final_meteo_params
+	)
+
+	air_res = requests.get(
+		AIR_QUALITY_URL,
+		params=final_air_params
+	)
+
+	if meteo_res.status_code == 200 and air_res.status_code == 200:
+		return {
+			"city":city_name,
+			"extracted_at": datetime.now().isoformat(),
+			"weather": meteo_res.json().get("hourly", {}),
+			"air_quality": air_res.json().get("hourly", {})
+		}
+
+	else:
+		print(
+			f"Extract error when trying to retrieve {city_name} meteo data"
+		)
+
+	return None
 
