@@ -46,7 +46,7 @@ def add_to_table(data: dict, city_name:  str, connection: DuckDBPyConnection):
 				normal_temp_avg_night = EXCLUDED.normal_temp_avg_night
 		""")
 
-	print(f"Archive data for {city_name} has been saved in re_climate_normals")
+	print(f"Archive data for {city_name} has been saved in ref_climate_normals")
 
 def fetch_archive_data():
 
