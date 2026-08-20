@@ -10,7 +10,7 @@ METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 CURRENT_FILE = Path(__file__).resolve()
 PROJECT_ROOT = CURRENT_FILE.parent.parent
 DB_PATH = PROJECT_ROOT / "data" / "weather_warehouse.duckdb"
-SQL_PATH = PROJECT_ROOT / "sql"
+SQL_PATH = PROJECT_ROOT / "sql" / "normals"
 
 def add_to_table(data: dict, city_name:  str, connection: DuckDBPyConnection):
 	df = pd.DataFrame({

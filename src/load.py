@@ -7,7 +7,7 @@ CURRENT_FILE = Path(__file__).resolve()
 PROJECT_ROOT = CURRENT_FILE.parent.parent
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 DB_PATH = PROJECT_ROOT / "data" / "weather_warehouse.duckdb"
-SQL_DIR = PROJECT_ROOT / "sql"
+SQL_DIR = PROJECT_ROOT / "sql" / "silver"
 
 def save_raw_data(data: list) -> Path:
 
