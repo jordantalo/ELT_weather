@@ -7,6 +7,7 @@ CURRENT_FILE = Path(__file__).resolve()
 PROJECT_ROOT = CURRENT_FILE.parent.parent
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 DB_PATH = PROJECT_ROOT / "data" / "weather_warehouse.duckdb"
+SQL_DIR = PROJECT_ROOT / "sql"
 
 def save_raw_data(data: list) -> Path:
 
@@ -21,7 +22,7 @@ def save_raw_data(data: list) -> Path:
 	print(f"[LOAD] raw data saved in: {filepath}")
 	return filepath
 
-def sync_json_to_duckdb():
+def load_into_silver_table():
 
 	json_files = list(RAW_DIR.glob("*.json"))
 	if not json_files:
@@ -33,40 +34,19 @@ def sync_json_to_duckdb():
 
 	connection = duckdb.connect(str(DB_PATH))
 
-	connection.execute("""
-		CREATE TABLE IF NOT EXISTS silver_weather (
-			city_name VARCHAR,
-			weather_timestamp TIMESTAMP,
-			temperature_celsius DOUBLE,
-			pm2_5 DOUBLE,
-			pm10 DOUBLE,
-			ingested_at TIMESTAMP,
-			PRIMARY KEY (city_name, weather_timestamp)
-		);
-	""")
+	with open(SQL_DIR / "01_create_silver_table.sql", "r", encoding="utf-8") as f:
+		query_create_silver_table = f.read()
 
-	connection.execute(f"""
-		CREATE TEMPORARY TABLE staging_data AS
-		SELECT
-			city AS city_name,
-			unnest(weather.time)::TIMESTAMP AS weather_timestamp,
-			unnest(weather.temperature_2m)::DOUBLE AS temperature_celsius,
-			unnest(air_quality.pm10)::DOUBLE AS pm10,
-			unnest(air_quality.pm2_5)::DOUBLE AS pm2_5,
-			current_timestamp AS ingested_at
-		FROM read_json_auto('{latest_file}')
-	""")
+	connection.execute(query_create_silver_table)
 
-	connection.execute("""
-		INSERT INTO silver_weather
-		SELECT city_name, weather_timestamp, temperature_celsius, pm2_5, pm10, ingested_at
-		FROM staging_data
-		ON CONFLICT (city_name, weather_timestamp)
-		DO UPDATE SET
-			temperature_celsius = EXCLUDED.temperature_celsius,
-			pm2_5 = EXCLUDED.pm2_5,
-			pm10 = EXCLUDED.pm10,
-			ingested_at = EXCLUDED.ingested_at;
-	""")
+	with open(SQL_DIR / "02_load_from_json.sql", "r", encoding="utf-8") as f:
+		query_load_json = f.read()
+
+	connection.execute(query_load_json, [str(latest_file)])
+
+	with open(SQL_DIR / "03_insert_into_silver", "r", encoding="utf-8") as f:
+		query_insert_into_silver = f.read()
+
+	connection.execute(query_insert_into_silver)
 
 	connection.close()

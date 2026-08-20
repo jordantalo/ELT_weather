@@ -10,6 +10,7 @@ METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 CURRENT_FILE = Path(__file__).resolve()
 PROJECT_ROOT = CURRENT_FILE.parent.parent
 DB_PATH = PROJECT_ROOT / "data" / "weather_warehouse.duckdb"
+SQL_PATH = PROJECT_ROOT / "sql"
 
 def add_to_table(data: dict, city_name:  str, connection: DuckDBPyConnection):
 	df = pd.DataFrame({
@@ -17,34 +18,15 @@ def add_to_table(data: dict, city_name:  str, connection: DuckDBPyConnection):
 		"temperature_celsius": data["hourly"]["temperature_2m"]
 	})
 
-	connection.execute(f"""
-		CREATE OR REPLACE TEMPORARY TABLE temp_raw_histo AS
-		SELECT
-		? AS city_name,
-		time::TIMESTAMP AS weather_timestamp,
-		temperature_celsius::DOUBLE AS temperature_celsius
-		FROM df;
-		""", [city_name])
+	with open(SQL_PATH / "02_save_normals_temp.sql", "r", encoding="utf-8") as f:
+		query_temp_table = f.read()
 
-	connection.execute("""
-		INSERT INTO ref_climate_normals
-		SELECT
-			city_name,
-			STRFTIME(weather_timestamp, '%m-%d') AS day_of_year,
+	connection.execute(query_temp_table, [city_name])
 
-			ROUND(AVG(CASE WHEN EXTRACT(HOUR FROM weather_timestamp) BETWEEN 6 AND 11 THEN temperature_celsius END), 2) AS normal_temp_avg_morning,
-			ROUND(AVG(CASE WHEN EXTRACT(HOUR FROM weather_timestamp) BETWEEN 12 AND 17 THEN temperature_celsius END), 2) AS normal_temp_avg_afternoon,
-			ROUND(AVG(CASE WHEN EXTRACT(HOUR FROM weather_timestamp) BETWEEN 18 AND 23 THEN temperature_celsius END), 2) AS normal_temp_avg_evening,
-			ROUND(AVG(CASE WHEN EXTRACT(HOUR FROM weather_timestamp) BETWEEN 0 AND 5 THEN temperature_celsius END), 2) AS normal_temp_avg_night
+	with open(SQL_PATH / "03_insert_into_normals_table.sql", "r", encoding="utf-8") as f:
+		query_normals_table = f.read()
 
-			FROM temp_raw_histo
-			GROUP BY city_name, STRFTIME(weather_timestamp, '%m-%d')
-			ON CONFLICT (city_name, day_of_year) DO UPDATE SET
-				normal_temp_avg_morning = EXCLUDED.normal_temp_avg_morning,
-				normal_temp_avg_afternoon = EXCLUDED.normal_temp_avg_afternoon,
-				normal_temp_avg_evening = EXCLUDED.normal_temp_avg_evening,
-				normal_temp_avg_night = EXCLUDED.normal_temp_avg_night
-		""")
+	connection.execute(query_normals_table)
 
 	print(f"Archive data for {city_name} has been saved in ref_climate_normals")
 
@@ -52,17 +34,10 @@ def fetch_archive_data():
 
 	connection = duckdb.connect(str(DB_PATH))
 
-	connection.execute("""
-		CREATE TABLE IF NOT EXISTS ref_climate_normals (
-			city_name VARCHAR,
-			day_of_year VARCHAR,
-			normal_temp_avg_morning DOUBLE,
-			normal_temp_avg_afternoon DOUBLE,
-			normal_temp_avg_evening DOUBLE,
-			normal_temp_avg_night DOUBLE,
-			PRIMARY KEY (city_name, day_of_year)
-		);
-	""")
+	with open(SQL_PATH / "01_create_normals_table.sql", "r", encoding="utf-8") as f:
+		create_normal_table_sql = f.read()
+
+	connection.execute(create_normal_table_sql)
 
 	for city_name, coords in CITIES.items():
 

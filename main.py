@@ -1,7 +1,7 @@
 from src.config import CITIES
 from src.extract import fetch_city_data
 from src.load import save_raw_data
-from src.load import sync_json_to_duckdb
+from src.load import load_into_silver_table
 
 def main():
 
@@ -18,7 +18,7 @@ def main():
 		saved_file_path = save_raw_data(all_data)
 		print(f"\nExtraction ended ! {len(all_data)} processed")
 
-		sync_json_to_duckdb()
+		load_into_silver_table()
 
 	else:
 		print("[WARNING] No data saved")
