@@ -29,17 +29,17 @@ def load_into_silver_table():
 
 	connection = duckdb.connect(str(DB_PATH))
 
-	with open(SQL_DIR / "01_create_silver_table.sql", "r", encoding="utf-8") as f:
+	with open(SILVER_DIR / "01_create_silver_table.sql", "r", encoding="utf-8") as f:
 		query_create_silver_table = f.read()
 
 	connection.execute(query_create_silver_table)
 
-	with open(SQL_DIR / "02_load_from_json.sql", "r", encoding="utf-8") as f:
+	with open(SILVER_DIR / "02_load_from_json.sql", "r", encoding="utf-8") as f:
 		query_load_json = f.read()
 
 	connection.execute(query_load_json, [str(latest_file)])
 
-	with open(SQL_DIR / "03_insert_into_silver.sql", "r", encoding="utf-8") as f:
+	with open(SILVER_DIR / "03_insert_into_silver.sql", "r", encoding="utf-8") as f:
 		query_insert_into_silver = f.read()
 
 	connection.execute(query_insert_into_silver)

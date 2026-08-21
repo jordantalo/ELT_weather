@@ -2,10 +2,9 @@ import requests
 import duckdb
 from datetime import datetime
 from pathlib import Path
-from config import CITIES
 from duckdb import DuckDBPyConnection
 import pandas as pd
-from src.config import SQL_DIR, DB_PATH
+from src.config import CITIES, SQL_DIR, DB_PATH
 
 METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 NORMALS_DIR = SQL_DIR / "normals"
@@ -42,9 +41,10 @@ def fetch_archive_data():
 		params = {
 			"latitude": coords["lat"],
 			"longitude": coords["lon"],
-			"start_date": "2020-01-01",
+			"start_date": "2000-01-01",
 			"end_date": "2025-12-31",
-			"hourly": "temperature_2m"
+			"hourly": "temperature_2m",
+            "timezone": "auto"
 		}
 
 		res = requests.get(

@@ -1,11 +1,8 @@
 import duckdb
 from datetime import datetime
 from pathlib import Path
+from src.config import PROJECT_ROOT, DB_PATH, DEBUG_DIR
 
-CURRENT_FILE = Path(__file__).resolve()
-PROJECT_ROOT = CURRENT_FILE.parent.parent
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
-DB_PATH = PROJECT_ROOT / "data" / "weather_warehouse.duckdb"
 SQL_DIR = PROJECT_ROOT / "scripts" / "sql"
 
 DEBUG_DIR.mkdir(parents=True, exist_ok=True)

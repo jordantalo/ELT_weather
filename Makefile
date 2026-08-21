@@ -41,5 +41,5 @@ debug:
 # Clean build caches and generated data
 clean:
 	$(COMPOSE) down -v
-	docker run --rm -v $(PWD)/data:/data alpine rm -rf /data/raw/* /data/debug_exports/*
+	docker run --rm -v "$$PWD/data:/data" alpine sh -c "rm -rf /data/raw /data/debug_exports /data/*.duckdb && mkdir -p /data/raw /data/debug_exports"
 	rm -rf __pycache__ src/__pycache__

@@ -9,7 +9,8 @@ def fetch_city_data(city_name: str, coords: dict) -> dict:
 		"latitude": coords["lat"],
 		"longitude": coords["lon"],
 		"past_days": 31,
-		"forecast_days": 4
+		"forecast_days": 4,
+        "timezone": "auto"
 	}
 
 	meteo_params = {
