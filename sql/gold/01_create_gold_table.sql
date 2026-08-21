@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS gold_daily_city_metrics (
 	temp_max_j1 DOUBLE,
 	temp_min_j1 DOUBLE,
 
-	temp_morning_avg_forecast_5d DOUBLE,
-	temp_afternoon_avg_forecast_5d DOUBLE,
-	temp_evening_avg_forecast_5d DOUBLE,
-	temp_night_avg_forecast_5d DOUBLE,
+	temp_morning_avg_forecast_3d DOUBLE,
+	temp_afternoon_avg_forecast_3d DOUBLE,
+	temp_evening_avg_forecast_3d DOUBLE,
+	temp_night_avg_forecast_3d DOUBLE,
 
 	temp_morning_avg_rolling_7d DOUBLE,
 	temp_afternoon_avg_rolling_7d DOUBLE,

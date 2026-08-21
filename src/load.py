@@ -44,7 +44,7 @@ def load_into_silver_table():
 
 	connection.execute(query_load_json, [str(latest_file)])
 
-	with open(SQL_DIR / "03_insert_into_silver", "r", encoding="utf-8") as f:
+	with open(SQL_DIR / "03_insert_into_silver.sql", "r", encoding="utf-8") as f:
 		query_insert_into_silver = f.read()
 
 	connection.execute(query_insert_into_silver)

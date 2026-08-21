@@ -1,0 +1,14 @@
+# Python / Environnement
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Données & Base de données (Ne jamais pusher sur GitHub)
+data/
+*.duckdb
+*.csv
+*.json
+
+# Environnement / Secrets
+.env

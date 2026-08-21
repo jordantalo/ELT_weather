@@ -8,7 +8,7 @@ def fetch_city_data(city_name: str, coords: dict) -> dict:
 	base_params = {
 		"latitude": coords["lat"],
 		"longitude": coords["lon"],
-		"past_days": 30,
+		"past_days": 31,
 		"forecast_days": 4
 	}
 

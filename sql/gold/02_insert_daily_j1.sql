@@ -37,10 +37,10 @@ SELECT
 	city_name,
 	date,
 
-	AVG(CASE WHEN period_of_day = 'morning' THEN temperature_celsius),
-	AVG(CASE WHEN period_of_day = 'afternoon' THEN temperature_celsius),
-	AVG(CASE WHEN period_of_day = 'evening' THEN temperature_celsius),
-	AVG(CASE WHEN period_of_day = 'night' THEN temperature_celsius),
+	AVG(CASE WHEN period_of_day = 'morning' THEN temperature_celsius END),
+	AVG(CASE WHEN period_of_day = 'afternoon' THEN temperature_celsius END),
+	AVG(CASE WHEN period_of_day = 'evening' THEN temperature_celsius END),
+	AVG(CASE WHEN period_of_day = 'night' THEN temperature_celsius END),
 	MAX(temperature_celsius),
 	MIN(temperature_celsius),
 
@@ -62,6 +62,6 @@ SELECT
 	SUM(flag_oms_pm10_exceeded),
 	SUM(flag_fr_pm10_exceeded),
 
-	FROM hourly_yesterday_pm_flag
+	FROM hourly_prepared
 
 	GROUP BY city_name, date;
