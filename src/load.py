@@ -2,16 +2,11 @@ import json
 import duckdb
 from datetime import datetime
 from pathlib import Path
+from src.config import DB_PATH, SQL_DIR, RAW_DIR
 
-CURRENT_FILE = Path(__file__).resolve()
-PROJECT_ROOT = CURRENT_FILE.parent.parent
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
-DB_PATH = PROJECT_ROOT / "data" / "weather_warehouse.duckdb"
-SQL_DIR = PROJECT_ROOT / "sql" / "silver"
+SILVER_DIR = SQL_DIR / "silver"
 
 def save_raw_data(data: list) -> Path:
-
-	RAW_DIR.mkdir(parents=True, exist_ok=True)
 
 	filename = f"weather_raw_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
 	filepath = RAW_DIR / filename

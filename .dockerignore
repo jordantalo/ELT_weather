@@ -1,0 +1,27 @@
+# Environnements virtuels
+venv/
+.venv/
+
+# Cache Python & Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Git & Configuration
+.git/
+.gitignore
+.dockerignore
+
+# Données & Base de données (seront montées via volume, pas copiées dans l'image)
+data/
+*.duckdb
+*.csv
+*.json
+
+# Documentation & Divers
+*.md
+.DS_Store
+.vscode/
+.idea/

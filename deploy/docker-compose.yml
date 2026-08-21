@@ -1,0 +1,10 @@
+services:
+  weather_pipeline:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: weather_etl_pipeline
+    volumes:
+      - ../data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1

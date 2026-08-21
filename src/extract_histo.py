@@ -5,12 +5,10 @@ from pathlib import Path
 from config import CITIES
 from duckdb import DuckDBPyConnection
 import pandas as pd
+from src.config import SQL_DIR, DB_PATH
 
 METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
-CURRENT_FILE = Path(__file__).resolve()
-PROJECT_ROOT = CURRENT_FILE.parent.parent
-DB_PATH = PROJECT_ROOT / "data" / "weather_warehouse.duckdb"
-SQL_DIR = PROJECT_ROOT / "sql" / "normals"
+NORMALS_DIR = SQL_DIR / "normals"
 
 def add_to_table(data: dict, city_name:  str, connection: DuckDBPyConnection):
 	df = pd.DataFrame({
@@ -18,12 +16,12 @@ def add_to_table(data: dict, city_name:  str, connection: DuckDBPyConnection):
 		"temperature_celsius": data["hourly"]["temperature_2m"]
 	})
 
-	with open(SQL_DIR / "02_save_normals_temp.sql", "r", encoding="utf-8") as f:
+	with open(NORMALS_DIR / "02_save_normals_temp.sql", "r", encoding="utf-8") as f:
 		query_temp_table = f.read()
 
 	connection.execute(query_temp_table, [city_name])
 
-	with open(SQL_DIR / "03_insert_into_normals_table.sql", "r", encoding="utf-8") as f:
+	with open(NORMALS_DIR / "03_insert_into_normals_table.sql", "r", encoding="utf-8") as f:
 		query_normals_table = f.read()
 
 	connection.execute(query_normals_table)
@@ -34,7 +32,7 @@ def fetch_archive_data():
 
 	connection = duckdb.connect(str(DB_PATH))
 
-	with open(SQL_DIR / "01_create_normals_table.sql", "r", encoding="utf-8") as f:
+	with open(NORMALS_DIR / "01_create_normals_table.sql", "r", encoding="utf-8") as f:
 		create_normal_table_sql = f.read()
 
 	connection.execute(create_normal_table_sql)
