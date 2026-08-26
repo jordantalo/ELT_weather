@@ -12,3 +12,6 @@ data/
 
 # Environnement / Secrets
 .env
+
+# Exception
+!.devcontainer/devcontainer.json
