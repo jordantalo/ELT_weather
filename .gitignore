@@ -7,8 +7,14 @@ __pycache__/
 # Données & Base de données (Ne jamais pusher sur GitHub)
 data/
 *.duckdb
+*.duckdb.wal
 *.csv
 *.json
+
+# Fichiers générés par dbt
+weather_dbt/target/
+weather_dbt/dbt_packages/
+weather_dbt/logs/
 
 # Environnement / Secrets
 .env
