@@ -1,13 +1,19 @@
-{{ config(materialized='table') }}
+{{
+	config (
+		materialized='incremental',
+		unique_key=['city_name', 'weather_timestamp'],
+		incremental_strategy='merge'
+	)
+}}
 
-WITH latest_file AS (
-	SELECT *
+WITH latest_filename AS (
+	SELECT filename
 	FROM read_json_auto('../data/raw/*.json', filename = true)
 	ORDER BY extracted_at DESC
 	LIMIT 1
 ),
 
-unnested_data AS (
+raw_data AS (
 	SELECT
 		city AS city_name,
 		unnest(weather.time)::TIMESTAMP AS weather_timestamp,
@@ -15,7 +21,8 @@ unnested_data AS (
 		unnest(air_quality.pm10)::DOUBLE AS pm10,
 		unnest(air_quality.pm2_5)::DOUBLE AS pm2_5,
 		current_timestamp AS ingested_at
-		FROM latest_file
+	FROM read_json_auto('../data/raw/*.json', filename = true) AS data
+	WHERE data.filename = (SELECT filename FROM latest_filename)
 )
 
-SELECT * FROM unnested_data
+SELECT * FROM raw_data

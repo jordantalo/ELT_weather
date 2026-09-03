@@ -1,40 +1,28 @@
 import requests
 import duckdb
+import json
 from datetime import datetime
 from pathlib import Path
 from duckdb import DuckDBPyConnection
 import pandas as pd
-from src.config import CITIES, SQL_DIR, DB_PATH
+from src.config import CITIES, RAW_DIR
 
 METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
-NORMALS_DIR = SQL_DIR / "normals"
 
-def add_to_table(data: dict, city_name:  str, connection: DuckDBPyConnection):
-	df = pd.DataFrame({
-		"time": data["hourly"]["time"],
-		"temperature_celsius": data["hourly"]["temperature_2m"]
-	})
+def save_normals_data(data: list) -> Path:
 
-	with open(NORMALS_DIR / "02_save_normals_temp.sql", "r", encoding="utf-8") as f:
-		query_temp_table = f.read()
+	filename = f"normals_{datetime.now().strftime('%Y')}.json"
+	filepath = RAW_DIR / filename
 
-	connection.execute(query_temp_table, [city_name])
+	with open(filepath, "w", encoding="utf-8") as f:
+		json.dump(data, f, ensure_ascii=False, indent=2)
 
-	with open(NORMALS_DIR / "03_insert_into_normals_table.sql", "r", encoding="utf-8") as f:
-		query_normals_table = f.read()
-
-	connection.execute(query_normals_table)
-
-	print(f"Archive data for {city_name} has been saved in ref_climate_normals")
+	print(f"[LOAD] raw data saved in: {filepath}")
+	return filepath
 
 def fetch_archive_data():
 
-	connection = duckdb.connect(str(DB_PATH))
-
-	with open(NORMALS_DIR / "01_create_normals_table.sql", "r", encoding="utf-8") as f:
-		create_normal_table_sql = f.read()
-
-	connection.execute(create_normal_table_sql)
+	all_city_normals = []
 
 	for city_name, coords in CITIES.items():
 
@@ -44,7 +32,7 @@ def fetch_archive_data():
 			"start_date": "2000-01-01",
 			"end_date": "2025-12-31",
 			"hourly": "temperature_2m",
-            "timezone": "auto"
+			"timezone": "auto"
 		}
 
 		res = requests.get(
@@ -53,11 +41,19 @@ def fetch_archive_data():
 		)
 
 		if res.status_code == 200:
-			add_to_table(res.json(), city_name, connection)
+			all_city_normals.append({
+				"city": city_name,
+				"extracted_at": datetime.now().isoformat(),
+				"data": res.json()
+				})
+		else:
+			print(f"[WARNING] Erreur {res.status_code} pour {city_name}")
 
-	print("=== [HISTO] TABLE ref_climate_normals initialized")
-
-	connection.close()
+	if all_city_normals:
+		save_normals_data(all_city_normals)
+		print("=== Raw normals file saved !")
+	else:
+		print("[ERROR] No data saved !")
 
 if (__name__ == "__main__"):
 	fetch_archive_data()
