@@ -5,7 +5,7 @@ WITH normals_raw AS (
 		city AS city_name,
 		unnest(data.hourly.time)::TIMESTAMP AS weather_timestamp,
 		unnest(data.hourly.temperature_2m)::DOUBLE AS temperature_celsius
-	FROM read_json_auto('../data/raw/normals_*.json', filename = true)
+	FROM read_json_auto('{{ env_var("NORMALS_DIR") }}/normals_*.json', filename = true)
 ),
 
 normals_ref AS (

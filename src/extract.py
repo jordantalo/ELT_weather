@@ -2,7 +2,7 @@ import requests
 import json
 from datetime import datetime
 from pathlib import Path
-from src.config import RAW_DIR
+from src.config import DAILY_DIR
 
 METEO_URL = "https://api.open-meteo.com/v1/forecast"
 AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality?"
@@ -57,7 +57,7 @@ def fetch_city_data(city_name: str, coords: dict) -> dict:
 def save_raw_data(data: list) -> Path:
 
 	filename = f"weather_raw_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-	filepath = RAW_DIR / filename
+	filepath = DAILY_DIR / filename
 
 	with open(filepath, "w", encoding="utf-8") as f:
 		json.dump(data, f, ensure_ascii=False, indent=2)

@@ -42,10 +42,6 @@ WITH daily_j1 AS (
 
 			WHERE date >= (SELECT MAX(date) - INTERVAL '31 days' FROM {{ this }})
 
-		{% else %}
-
-			WHERE date >= CURRENT_DATE - INTERVAL '31 days'
-
 		{% endif %}
 
 		GROUP BY city_name, date
@@ -84,6 +80,9 @@ SELECT * FROM add_rolling_metrics
 
 {% else %}
 
-	WHERE date = CURRENT_DATE - INTERVAL '1 day'
+	WHERE date BETWEEN
+		(SELECT MIN(date) + INTERVAL '30 days' FROM {{ ref('int_weather_prepared') }})
+		AND
+		(CURRENT_DATE - INTERVAL '1 day')
 
 {% endif %}

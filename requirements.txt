@@ -12,3 +12,4 @@ six==1.17.0
 urllib3==2.7.0
 zope.interface==8.5
 dbt-duckdb
+apache-airflow==2.10.0

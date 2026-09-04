@@ -1,20 +1,22 @@
 from pathlib import Path
-
-# Project root directory
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+import os
 
 # Directory paths
-DATA_DIR = PROJECT_ROOT / "data"
-RAW_DIR = DATA_DIR / "raw"
-DEBUG_DIR = DATA_DIR / "debug_exports"
+NORMALS_DIR = Path(os.getenv("NORMALS_DIR"))
+DAILY_DIR = Path(os.getenv("DAILY_DIR"))
+DEBUG_DIR = Path(os.getenv("DEBUG_DIR"))
+RAW_DIR = Path(os.getenv("RAW_DIR"))
+PROJECT_DIR = Path(os.getenv("PROJECT_DIR"))
 
 # Database path
-DB_PATH = DATA_DIR / "weather.duckdb"
+DB_PATH = Path(os.getenv("DB_PATH"))
 
 def init_directories():
 	RAW_DIR.mkdir(parents=True, exist_ok=True)
 	DEBUG_DIR.mkdir(parents=True, exist_ok=True)
-	print(f"[CONFIG] Target directories verified: {RAW_DIR} | {DEBUG_DIR}")
+	NORMALS_DIR.mkdir(parents=True, exist_ok=True)
+	DAILY_DIR.mkdir(parents=True, exist_ok=True)
+	print(f"[CONFIG] Target directories verified: {RAW_DIR} | {DEBUG_DIR} | {NORMALS_DIR} | {DAILY_DIR}")
 
 CITIES = {
 	"Paris": {"lat": 48.8566, "lon": 2.3822},

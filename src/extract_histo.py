@@ -5,14 +5,14 @@ from datetime import datetime
 from pathlib import Path
 from duckdb import DuckDBPyConnection
 import pandas as pd
-from src.config import CITIES, RAW_DIR
+from src.config import CITIES, NORMALS_DIR
 
 METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 
 def save_normals_data(data: list) -> Path:
 
 	filename = f"normals_{datetime.now().strftime('%Y')}.json"
-	filepath = RAW_DIR / filename
+	filepath = NORMALS_DIR / filename
 
 	with open(filepath, "w", encoding="utf-8") as f:
 		json.dump(data, f, ensure_ascii=False, indent=2)

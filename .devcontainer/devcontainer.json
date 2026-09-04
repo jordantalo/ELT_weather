@@ -7,6 +7,17 @@
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {}
 	},
+	"containerEnv": {
+		"PROJECT_DIR": "${containerWorkspaceFolder}",
+		"AIRFLOW__CORE__LOAD_EXAMPLES": "False",
+		"AIRFLOW_HOME": "${containerWorkspaceFolder}/airflow_app",
+		"AIRFLOW__CORE__DAGS_FOLDER": "${containerWorkspaceFolder}/weather/dags",
+		"RAW_DIR": "${containerWorkspaceFolder}/data/raw",
+		"NORMALS_DIR": "${containerWorkspaceFolder}/data/raw/normals",
+		"DAILY_DIR": "${containerWorkspaceFolder}/data/raw/daily",
+		"DEBUG_DIR": "${containerWorkspaceFolder}/data/raw/debug",
+		"DB_PATH": "${containerWorkspaceFolder}/data/weather.duckdb"
+	},
 	"postCreateCommand": "bash ./setup.sh",
 	"customizations": {
 		"vscode": {

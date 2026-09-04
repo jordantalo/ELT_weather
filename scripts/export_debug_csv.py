@@ -1,7 +1,7 @@
 import duckdb
-from src.config import PROJECT_ROOT, DB_PATH, DEBUG_DIR
+from src.config import PROJECT_DIR, DB_PATH, DEBUG_DIR
 
-SQL_DIR = PROJECT_ROOT / "scripts" / "sql"
+SQL_DIR = PROJECT_DIR / "scripts" / "sql"
 
 DEBUG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -15,7 +15,7 @@ tables_to_export = [
 
 for table in tables_to_export:
 	print(f"Export of the table {table} in CSV...")
-	connection.execute(f"COPY (SELECT * FROM {table}) TO 'data/debug_exports/{table}.csv' (HEADER, DELIMITER ',');")
+	connection.execute(f"COPY (SELECT * FROM {table}) TO '{DEBUG_DIR}/{table}.csv' (HEADER, DELIMITER ',');")
 
 print("Exports ended !")
 
