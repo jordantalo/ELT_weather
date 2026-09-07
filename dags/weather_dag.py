@@ -3,8 +3,7 @@ import os
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
-
-DBT_PROJECT_DIR = "/workspaces/weather/weather_dbt"
+from src.config import PROJECT_DIR, DBT_DIR
 
 default_args = {
 	'owner': 'jordan',
@@ -25,12 +24,12 @@ with DAG(
 
 	extract_task = BashOperator(
 		task_id='extract_temp_data_api',
-		bash_command='python3 /workspaces/weather/main.py',
+		bash_command=f'python3 {PROJECT_DIR}/main.py',
 	)
 
 	dbt_transform_task = BashOperator(
 		task_id='dbt_run_models',
-		bash_command=f'cd {DBT_PROJECT_DIR} && dbt run --profiles-dir .',
+		bash_command=f'cd {DBT_DIR} && dbt run --profiles-dir .',
 	)
 
 	extract_task >> dbt_transform_task

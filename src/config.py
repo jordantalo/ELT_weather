@@ -7,6 +7,7 @@ DAILY_DIR = Path(os.getenv("DAILY_DIR"))
 DEBUG_DIR = Path(os.getenv("DEBUG_DIR"))
 RAW_DIR = Path(os.getenv("RAW_DIR"))
 PROJECT_DIR = Path(os.getenv("PROJECT_DIR"))
+DBT_DIR = Path(os.getenv("DBT_DIR"))
 
 # Database path
 DB_PATH = Path(os.getenv("DB_PATH"))

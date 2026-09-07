@@ -10,7 +10,7 @@ services:
     environment:
     - AIRFLOW_HOME=/app/airflow_app
     - AIRFLOW__CORE__LOAD_EXAMPLES=False
-    - AIRFLOW__CORE__DAGS_FOLDER=/app/weather/dags
+    - AIRFLOW__CORE__DAGS_FOLDER=/app/dags
     - AIRFLOW_ADMIN_USER=admin
     - AIRFLOW_ADMIN_PASSWORD=admin
     - PROJECT_DIR=/app
@@ -18,10 +18,10 @@ services:
     - NORMALS_DIR=/app/data/raw/normals
     - DAILY_DIR=/app/data/raw/daily
     - DEBUG_DIR=/app/data/raw/debug
-    - DB_PATH=app/data/weather.duckdb
+    - DB_PATH=/app/data/weather.duckdb
+    - DBT_DIR=/app/weather_dbt
+    - PYTHONUNBUFFERED=1
+    - PYTHONPATH=/app
     volumes:
       - ../data:/app/data
       - ../airflow_app/logs:/app/airflow_app/logs
-
-    environment:
-      - PYTHONUNBUFFERED=1
