@@ -4,7 +4,24 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile
     container_name: weather_etl_pipeline
+    restart: always
+    ports:
+    - "8080:8080"
+    environment:
+    - AIRFLOW_HOME=/app/airflow_app
+    - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    - AIRFLOW__CORE__DAGS_FOLDER=/app/weather/dags
+    - AIRFLOW_ADMIN_USER=admin
+    - AIRFLOW_ADMIN_PASSWORD=admin
+    - PROJECT_DIR=/app
+    - RAW_DIR=/app/data/raw
+    - NORMALS_DIR=/app/data/raw/normals
+    - DAILY_DIR=/app/data/raw/daily
+    - DEBUG_DIR=/app/data/raw/debug
+    - DB_PATH=app/data/weather.duckdb
     volumes:
       - ../data:/app/data
+      - ../airflow_app/logs:/app/airflow_app/logs
+
     environment:
       - PYTHONUNBUFFERED=1

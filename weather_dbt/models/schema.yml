@@ -1,0 +1,437 @@
+version: 2
+
+models:
+  - name: stg_weather
+    description: "Staging model cleans and types raw hourly weather and air quality observation records."
+    columns:
+      - name: city_name
+        data_type: varchar
+        description: "Name of the monitored city."
+
+      - name: weather_timestamp
+        data_type: timestamp
+        description: "Timestamp of the local weather measurement."
+
+      - name: temperature_celsius
+        data_type: double
+        description: "Observed temperature in degrees Celsius."
+
+      - name: pm10
+        data_type: double
+        description: "Particulate matter PM10 concentration (µg/m³)."
+
+      - name: pm2_5
+        data_type: double
+        description: "Fine particulate matter PM2.5 concentration (µg/m³)."
+
+      - name: ingested_at_utc
+        data_type: timestamp with time zone
+        description: "Ingestion timestamp in UTC."
+
+      - name: ingested_at_fr
+        data_type: timestamp
+        description: "Ingestion timestamp in French local time (CET/CEST)."
+
+      - name: filename
+        data_type: varchar
+        description: "Source file name used for metadata tracking and auditability."
+
+  - name: stg_weather_normals
+    description: "Staging model for historical climate normals reference data."
+    columns:
+      - name: city_name
+        data_type: varchar
+        description: "Name of the target city."
+
+      - name: day_of_year
+        data_type: varchar
+        description: "Day of the year in MM-DD format."
+
+      - name: normal_temp_avg_morning
+        data_type: double
+        description: "Historical average morning temperature in Celsius."
+
+      - name: normal_temp_avg_afternoon
+        data_type: double
+        description: "Historical average afternoon temperature in Celsius."
+
+      - name: normal_temp_avg_evening
+        data_type: double
+        description: "Historical average evening temperature in Celsius."
+
+      - name: normal_temp_avg_night
+        data_type: double
+        description: "Historical average night temperature in Celsius."
+
+  - name: int_weather_prepared
+    description: "Intermediate transformation layer categorizing observations into dayparts and computing regulatory air quality thresholds."
+    columns:
+      - name: date
+        data_type: date
+        description: "Observation date."
+
+      - name: city_name
+        data_type: varchar
+        description: "Name of the city."
+
+      - name: pm2_5
+        data_type: double
+        description: "PM2.5 concentration level."
+
+      - name: pm10
+        data_type: double
+        description: "PM10 concentration level."
+
+      - name: temperature_celsius
+        data_type: double
+        description: "Temperature measurement in Celsius."
+
+      - name: weather_timestamp
+        data_type: timestamp
+        description: "Exact timestamp of the measurement."
+
+      - name: temp_morning
+        data_type: double
+        description: "Filtered temperature for the morning period."
+
+      - name: temp_afternoon
+        data_type: double
+        description: "Filtered temperature for the afternoon period."
+
+      - name: temp_evening
+        data_type: double
+        description: "Filtered temperature for the evening period."
+
+      - name: temp_night
+        data_type: double
+        description: "Filtered temperature for the night period."
+
+      - name: period_of_day
+        data_type: varchar
+        description: "Categorized daypart (Morning, Afternoon, Evening, Night)."
+
+      - name: flag_oms_pm25_exceeded
+        data_type: integer
+        description: "Flag (1/0) indicating if PM2.5 exceeds WHO recommended limits."
+
+      - name: flag_fr_pm25_exceeded
+        data_type: integer
+        description: "Flag (1/0) indicating if PM2.5 exceeds French regulatory limits."
+
+      - name: flag_oms_pm10_exceeded
+        data_type: integer
+        description: "Flag (1/0) indicating if PM10 exceeds WHO recommended limits."
+
+      - name: flag_fr_pm10_exceeded
+        data_type: integer
+        description: "Flag (1/0) indicating if PM10 exceeds French regulatory limits."
+
+  - name: fct_insert_daily_j1
+    description: "Mart layer containing daily aggregated metrics, rolling statistics, and pollution threshold exceedances for previous-day weather."
+    columns:
+      - name: city_name
+        data_type: varchar
+        description: "Target city name."
+
+      - name: date
+        data_type: date
+        description: "Aggregation date (T-1)."
+
+      - name: temp_morning_avg
+        data_type: double
+        description: "Average morning temperature."
+
+      - name: temp_afternoon_avg
+        data_type: double
+        description: "Average afternoon temperature."
+
+      - name: temp_evening_avg
+        data_type: double
+        description: "Average evening temperature."
+
+      - name: temp_night_avg
+        data_type: double
+        description: "Average night temperature."
+
+      - name: temp_max
+        data_type: double
+        description: "Daily maximum temperature."
+
+      - name: temp_min
+        data_type: double
+        description: "Daily minimum temperature."
+
+      - name: pm2_5_avg
+        data_type: double
+        description: "Daily average PM2.5 concentration."
+
+      - name: pm2_5_morning_avg
+        data_type: double
+        description: "Average morning PM2.5 concentration."
+
+      - name: pm2_5_afternoon_avg
+        data_type: double
+        description: "Average afternoon PM2.5 concentration."
+
+      - name: pm2_5_evening_avg
+        data_type: double
+        description: "Average evening PM2.5 concentration."
+
+      - name: pm2_5_night_avg
+        data_type: double
+        description: "Average night PM2.5 concentration."
+
+      - name: pm2_5_max
+        data_type: double
+        description: "Maximum recorded PM2.5 concentration of the day."
+
+      - name: hours_pm2_5_exceeded_oms
+        data_type: hugeint
+        description: "Total hours PM2.5 exceeded WHO safety levels."
+
+      - name: hours_pm2_5_exceeded_fr
+        data_type: hugeint
+        description: "Total hours PM2.5 exceeded French regulatory limits."
+
+      - name: pm10_avg
+        data_type: double
+        description: "Daily average PM10 concentration."
+
+      - name: pm10_morning_avg
+        data_type: double
+        description: "Average morning PM10 concentration."
+
+      - name: pm10_afternoon_avg
+        data_type: double
+        description: "Average afternoon PM10 concentration."
+
+      - name: pm10_evening_avg
+        data_type: double
+        description: "Average evening PM10 concentration."
+
+      - name: pm10_night_avg
+        data_type: double
+        description: "Average night PM10 concentration."
+
+      - name: pm10_max_j1
+        data_type: double
+        description: "Maximum recorded PM10 concentration of the day."
+
+      - name: hours_pm10_exceeded_oms
+        data_type: hugeint
+        description: "Total hours PM10 exceeded WHO safety levels."
+
+      - name: hours_pm10_exceeded_fr
+        data_type: hugeint
+        description: "Total hours PM10 exceeded French regulatory limits."
+
+      - name: r30_morning
+        data_type: double
+        description: "30-day rolling average temperature for morning periods."
+
+      - name: r30_afternoon
+        data_type: double
+        description: "30-day rolling average temperature for afternoon periods."
+
+      - name: r30_evening
+        data_type: double
+        description: "30-day rolling average temperature for evening periods."
+
+      - name: r30_night
+        data_type: double
+        description: "30-day rolling average temperature for night periods."
+
+      - name: r7_morning
+        data_type: double
+        description: "7-day rolling average temperature for morning periods."
+
+      - name: r7_afternoon
+        data_type: double
+        description: "7-day rolling average temperature for afternoon periods."
+
+      - name: r7_evening
+        data_type: double
+        description: "7-day rolling average temperature for evening periods."
+
+      - name: r7_night
+        data_type: double
+        description: "7-day rolling average temperature for night periods."
+
+      - name: f3_morning
+        data_type: double
+        description: "3-day forward/forecast average temperature for morning periods."
+
+      - name: f3_afternoon
+        data_type: double
+        description: "3-day forward/forecast average temperature for afternoon periods."
+
+      - name: f3_evening
+        data_type: double
+        description: "3-day forward/forecast average temperature for evening periods."
+
+      - name: f3_night
+        data_type: double
+        description: "3-day forward/forecast average temperature for night periods."
+
+  - name: fct_insert_normals
+    description: "Mart layer comparing daily aggregates against seasonal climate normals to evaluate temperature anomalies."
+    columns:
+      - name: city_name
+        data_type: varchar
+        description: "Target city name."
+
+      - name: date
+        data_type: date
+        description: "Observation date."
+
+      - name: temp_morning_avg
+        data_type: double
+        description: "Average morning temperature."
+
+      - name: temp_afternoon_avg
+        data_type: double
+        description: "Average afternoon temperature."
+
+      - name: temp_evening_avg
+        data_type: double
+        description: "Average evening temperature."
+
+      - name: temp_night_avg
+        data_type: double
+        description: "Average night temperature."
+
+      - name: temp_max
+        data_type: double
+        description: "Daily maximum temperature."
+
+      - name: temp_min
+        data_type: double
+        description: "Daily minimum temperature."
+
+      - name: pm2_5_avg
+        data_type: double
+        description: "Daily average PM2.5 concentration."
+
+      - name: pm2_5_morning_avg
+        data_type: double
+        description: "Average morning PM2.5 concentration."
+
+      - name: pm2_5_afternoon_avg
+        data_type: double
+        description: "Average afternoon PM2.5 concentration."
+
+      - name: pm2_5_evening_avg
+        data_type: double
+        description: "Average evening PM2.5 concentration."
+
+      - name: pm2_5_night_avg
+        data_type: double
+        description: "Average night PM2.5 concentration."
+
+      - name: pm2_5_max
+        data_type: double
+        description: "Maximum recorded PM2.5 concentration of the day."
+
+      - name: hours_pm2_5_exceeded_oms
+        data_type: hugeint
+        description: "Total hours PM2.5 exceeded WHO safety levels."
+
+      - name: hours_pm2_5_exceeded_fr
+        data_type: hugeint
+        description: "Total hours PM2.5 exceeded French regulatory limits."
+
+      - name: pm10_avg
+        data_type: double
+        description: "Daily average PM10 concentration."
+
+      - name: pm10_morning_avg
+        data_type: double
+        description: "Average morning PM10 concentration."
+
+      - name: pm10_afternoon_avg
+        data_type: double
+        description: "Average afternoon PM10 concentration."
+
+      - name: pm10_evening_avg
+        data_type: double
+        description: "Average evening PM10 concentration."
+
+      - name: pm10_night_avg
+        data_type: double
+        description: "Average night PM10 concentration."
+
+      - name: pm10_max_j1
+        data_type: double
+        description: "Maximum recorded PM10 concentration of the day."
+
+      - name: hours_pm10_exceeded_oms
+        data_type: hugeint
+        description: "Total hours PM10 exceeded WHO safety levels."
+
+      - name: hours_pm10_exceeded_fr
+        data_type: hugeint
+        description: "Total hours PM10 exceeded French regulatory limits."
+
+      - name: r30_morning
+        data_type: double
+        description: "30-day rolling average temperature for morning periods."
+
+      - name: r30_afternoon
+        data_type: double
+        description: "30-day rolling average temperature for afternoon periods."
+
+      - name: r30_evening
+        data_type: double
+        description: "30-day rolling average temperature for evening periods."
+
+      - name: r30_night
+        data_type: double
+        description: "30-day rolling average temperature for night periods."
+
+      - name: r7_morning
+        data_type: double
+        description: "7-day rolling average temperature for morning periods."
+
+      - name: r7_afternoon
+        data_type: double
+        description: "7-day rolling average temperature for afternoon periods."
+
+      - name: r7_evening
+        data_type: double
+        description: "7-day rolling average temperature for evening periods."
+
+      - name: r7_night
+        data_type: double
+        description: "7-day rolling average temperature for night periods."
+
+      - name: f3_morning
+        data_type: double
+        description: "3-day forward average temperature for morning periods."
+
+      - name: f3_afternoon
+        data_type: double
+        description: "3-day forward average temperature for afternoon periods."
+
+      - name: f3_evening
+        data_type: double
+        description: "3-day forward average temperature for evening periods."
+
+      - name: f3_night
+        data_type: double
+        description: "3-day forward average temperature for night periods."
+
+      - name: temp_gap_with_normals_morning
+        data_type: double
+        description: "Temperature variance against historical seasonal norm for morning periods."
+
+      - name: temp_gap_with_normals_afternoon
+        data_type: double
+        description: "Temperature variance against historical seasonal norm for afternoon periods."
+
+      - name: temp_gap_with_normals_evening
+        data_type: double
+        description: "Temperature variance against historical seasonal norm for evening periods."
+
+      - name: temp_gap_with_normals_night
+        data_type: double
+        description: "Temperature variance against historical seasonal norm for night periods."

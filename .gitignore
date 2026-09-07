@@ -1,3 +1,7 @@
+# Airflow Runtime & Logs
+airflow_app/
+*.pid
+
 # Python / Environnement
 venv/
 .venv/
@@ -6,6 +10,7 @@ __pycache__/
 
 # Données & Base de données (Ne jamais pusher sur GitHub)
 data/
+logs/
 *.duckdb
 *.duckdb.wal
 *.csv
