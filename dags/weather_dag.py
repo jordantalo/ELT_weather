@@ -29,7 +29,7 @@ with DAG(
 
 	dbt_transform_task = BashOperator(
 		task_id='dbt_run_models',
-		bash_command=f'cd {DBT_DIR} && dbt run --profiles-dir .',
+		bash_command=f'cd {DBT_DIR} && dbt deps && dbt run --profiles-dir .',
 	)
 
 	extract_task >> dbt_transform_task

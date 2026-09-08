@@ -13,5 +13,8 @@ airflow users create \
 	--email admin@example.com \
 	--role Admin || true
 
+echo "=== Démarrage de l'interface Streamlit (Port 8501) ==="
+streamlit run src/app.py --server.address=0.0.0.0 --server.port=8501 &
+
 echo "=== Démarrage d'Airflow Standalone ==="
 exec airflow standalone

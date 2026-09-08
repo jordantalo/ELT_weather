@@ -7,6 +7,7 @@ services:
     restart: always
     ports:
     - "8080:8080"
+    - "8501:8501"
     environment:
     - AIRFLOW_HOME=/app/airflow_app
     - AIRFLOW__CORE__LOAD_EXAMPLES=False
