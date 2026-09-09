@@ -1,53 +1,38 @@
 import os
 import duckdb
+from datetime import datetime
 from langchain_ollama import ChatOllama
-from langchain_core.prompts import PromptTemplate
+
 from src.config import DB_PATH
+from src.prompts import SQL_GENERATION_PROMPT, FINAL_SYNTHESIS_PROMPT
 
 def ask_weather_agent(question: str) -> str:
     base_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
     llm = ChatOllama(model="llama3.2:3b", temperature=0, base_url=base_url)
 
-    # 1. Prompt pour générer UNIQUEMENT du SQL
-    sql_prompt = PromptTemplate.from_template("""
-Tu es un expert DuckDB. Génère UNE SEULE requête SQL valide pour répondre à la question.
+    today_str = datetime.now().strftime('%Y-%m-%d')
 
-Table: fct_insert_normals
-Colonnes principales: city (ex: 'newyork'), date, temp_morning, temp_afternoon, temp_evening
-
-Règles:
-- Recherche de ville: utilise toujours `ILIKE '%<ville>%'`
-- Ne renvoie RIEN d'autre que la requête SQL (pas de Markdown, pas de commentaires).
-
-Question: {question}
-SQL:""")
-
-    # Génération du SQL par le LLM
-    sql_query = llm.invoke(sql_prompt.format(question=question)).content.strip()
-
-    # Nettoyage si le modèle entoure de ```sql ... ```
+    prompt_formatted = SQL_GENERATION_PROMPT.format(
+        question=question,
+        today_date=today_str
+    )
+    sql_query = llm.invoke(prompt_formatted).content.strip()
     sql_query = sql_query.replace("```sql", "").replace("```", "").strip()
 
-    # 2. Exécution directe dans DuckDB via Python (Sécurisé et rapide)
     try:
-        con = duckdb.connect(DB_PATH)
-        df_result = con.execute(sql_query).df()
-        con.close()
+        with duckdb.connect(DB_PATH) as con:
+            df_result = con.execute(sql_query).df()
 
         if df_result.empty:
             return "Désolé, aucune donnée ne correspond à cette recherche."
 
         data_str = df_result.to_string(index=False)
     except Exception as e:
-        return f"Erreur lors de l'exécution de la requête : {e}"
+        return f"Erreur lors de l'exécution SQL : {e}"
 
-    # 3. Prompt pour la réponse finale en français
-    final_prompt = PromptTemplate.from_template("""
-En te basant uniquement sur ces données météo :
-{data}
+    final_prompt = FINAL_SYNTHESIS_PROMPT.format(
+        data=data_str,
+        question=question
+    )
 
-Réponds de façon synthétique et naturelle à la question suivante en français.
-Question: {question}
-Réponse:""")
-
-    return llm.invoke(final_prompt.format(data=data_str, question=question)).content.strip()
+    return llm.invoke(final_prompt).content.strip()
