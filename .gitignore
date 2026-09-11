@@ -26,3 +26,6 @@ weather_dbt/logs/
 
 # Exception
 !.devcontainer/devcontainer.json
+
+*.tar.gz
+*.zip
